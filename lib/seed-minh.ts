@@ -239,6 +239,14 @@ export const MINH: CvData = {
     },
   ],
 
+  clients: [
+    { name: "Paula's Choice Vietnam", logo: "/logos/clients/paulaschoice.jpg", url: "https://paulaschoice.vn/" },
+    { name: "Chautfifth", logo: "/logos/clients/chautfifth.png", url: "https://chautfifth.com/" },
+    { name: "Anua Japan", logo: "/logos/clients/anua.png", url: "https://www.anuajapan.com/" },
+    { name: "Boody Japan", logo: "/logos/clients/boody.png", url: "https://www.boody.co.jp/" },
+    { name: "Favs Beauty Japan", logo: "/logos/clients/favs.png", url: "https://favs-official.com/" },
+  ],
+
   education: [
     {
       degree: "Bachelor's degree of Spanish Language",
@@ -278,18 +286,21 @@ export const MINH: CvData = {
       name: "CoolVita",
       description: "Joy Loyalty landing page",
       url: "http://bit.ly/3R2VnJj",
+      logo: "/logos/clients/coolvita.jpg",
     },
     {
       group: "Joy Loyalty landing pages, built with AI (Avada Commerce, 2026)",
       name: "Songmont",
       description: "Joy Loyalty landing page",
       url: "https://bit.ly/44yvjZA",
+      logo: "/logos/clients/songmont.png",
     },
     {
       group: "Joy Loyalty landing pages, built with AI (Avada Commerce, 2026)",
       name: "The Game Collection",
       description: "Joy Loyalty landing page",
       url: "https://bit.ly/3RJvQoz",
+      logo: "/logos/clients/gamecollection.svg",
     },
     {
       group: "LitCommerce YouTube marketing videos (Lit Group, 2023)",

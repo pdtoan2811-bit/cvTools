@@ -47,6 +47,16 @@ export const LOGO_LIBRARY: LogoEntry[] = [
   { file: "/logos/co/paloma.png", names: ["paloma"], hosts: ["palomacruise.com"] },
   { file: "/logos/co/asiaeyes.png", names: ["asia eyes"], hosts: ["asiaeyestravel.com"] },
 
+  // Merchant brands Minh closed, and the stores he built landing pages for.
+  { file: "/logos/clients/paulaschoice.jpg", names: ["paula's choice", "paulas choice"], hosts: ["paulaschoice.vn", "paulaschoice.com"] },
+  { file: "/logos/clients/chautfifth.png", names: ["chautfifth"], hosts: ["chautfifth.com"] },
+  { file: "/logos/clients/anua.png", names: ["anua"], hosts: ["anuajapan.com", "anua.com"] },
+  { file: "/logos/clients/boody.png", names: ["boody"], hosts: ["boody.co.jp", "boody.com.au"] },
+  { file: "/logos/clients/favs.png", names: ["favs beauty", "favs"], hosts: ["favs-official.com"] },
+  { file: "/logos/clients/coolvita.jpg", names: ["coolvita", "cool-vita", "cool vita"], hosts: ["coolvita.vn"] },
+  { file: "/logos/clients/songmont.png", names: ["songmont"], hosts: ["songmontofficial.com", "songmont.com"] },
+  { file: "/logos/clients/gamecollection.svg", names: ["game collection"], hosts: ["thegamecollection.net"] },
+
   { file: "/logos/skills/bigquery.svg", names: ["bigquery", "big query"] },
   { file: "/logos/skills/firebase.svg", names: ["firebase"] },
   { file: "/logos/skills/figma.svg", names: ["figma"] },
