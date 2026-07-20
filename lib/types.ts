@@ -21,6 +21,8 @@ export type Experience = {
   role: string;
   company?: string;
   period?: string;
+  /** Company mark, shown in the date gutter beside the role. */
+  logo?: string;
   /** One-line flavour under the job title, e.g. "Brought Joy to the world". */
   headline?: string;
   points: string[];
@@ -41,6 +43,8 @@ export type Education = {
   degree: string;
   school?: string;
   period?: string;
+  /** School mark, shown in the date gutter. */
+  logo?: string;
   certifications?: string[];
 };
 

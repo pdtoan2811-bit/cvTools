@@ -20,6 +20,8 @@ export type LogoEntry = {
   bg?: string;
 };
 
+// Order matters: the first entry whose name matches wins, so keep the more
+// specific names above the ones they contain ("litcommerce" before "lit").
 export const LOGO_LIBRARY: LogoEntry[] = [
   { file: "/logos/joy-subscription.png", names: ["joy subscription", "joy sub"], hosts: ["apps.shopify.com/joy-subscription"] },
   { file: "/logos/joy.png", names: ["joy loyalty", "joy ultimate", "joy wishlist", "joy"], hosts: ["apps.shopify.com/joyio", "joy.so"] },
@@ -32,6 +34,19 @@ export const LOGO_LIBRARY: LogoEntry[] = [
   { file: "/logos/clients/tinselrack.png", names: ["tinsel rack", "tinselrack"], hosts: ["thetinselrack.com"] },
   { file: "/logos/clients/koreanskincare.png", names: ["korean skincare"], hosts: ["koreanskincare.com"] },
   { file: "/logos/clients/glamourus.png", names: ["glamour us", "glamourus"], hosts: ["glamourusus.com"] },
+  // Companies and products from Minh's CV, fetched from each brand's own site.
+  { file: "/logos/co/gempages.jpg", names: ["gempages", "gem pages", "gemcommerce"], hosts: ["apps.shopify.com/gempages", "gempages.net"] },
+  { file: "/logos/co/litextension.svg", names: ["litextension"], hosts: ["litextension.com"] },
+  { file: "/logos/co/litcommerce.png", names: ["litcommerce"], hosts: ["litcommerce.com"] },
+  { file: "/logos/co/litgroup.svg", names: ["lit group", "litgroup"], hosts: ["litgroup.io"] },
+  { file: "/logos/co/avada.svg", names: ["avada"], hosts: ["avada.io"] },
+  { file: "/logos/co/savvycom.svg", names: ["savvycom"], hosts: ["savvycomsoftware.com", "savvycom.vn"] },
+  { file: "/logos/co/teknowledge.svg", names: ["teknowledge", "tek experts"], hosts: ["teknowledge.com"] },
+  { file: "/logos/co/hanu.png", names: ["hanoi university"], hosts: ["hanu.vn"] },
+  { file: "/logos/co/vietnamnet.png", names: ["vietnamnet"], hosts: ["vietnamnet.vn"] },
+  { file: "/logos/co/paloma.png", names: ["paloma"], hosts: ["palomacruise.com"] },
+  { file: "/logos/co/asiaeyes.png", names: ["asia eyes"], hosts: ["asiaeyestravel.com"] },
+
   { file: "/logos/skills/bigquery.svg", names: ["bigquery", "big query"] },
   { file: "/logos/skills/firebase.svg", names: ["firebase"] },
   { file: "/logos/skills/figma.svg", names: ["figma"] },

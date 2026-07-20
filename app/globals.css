@@ -528,3 +528,89 @@ textarea.tx { resize: vertical; min-height: 62px; }
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11.5px; color: #8a5d09;
 }
+
+/* ============================================================
+   INLINE EDITING — the CV edits itself.
+   `.ed-f` fields only exist inside the editor; the public view
+   renders the same markup without them.
+   ============================================================ */
+
+.ed-f {
+  outline: none;
+  border-radius: 3px;
+  transition: background-color .12s ease, box-shadow .12s ease;
+  cursor: text;
+}
+.is-editing .ed-f:hover { background: rgba(31, 95, 191, .07); }
+.is-editing .ed-f:focus {
+  background: rgba(31, 95, 191, .09);
+  box-shadow: 0 0 0 2px rgba(31, 95, 191, .28);
+}
+/* Empty fields need a target to click and a hint about what goes there. */
+.is-editing .ed-f.is-empty::before {
+  content: attr(data-ph);
+  color: var(--faint);
+  font-style: italic;
+  pointer-events: none;
+}
+.is-editing .ed-f.is-empty {
+  min-width: 60px;
+  display: inline-block;
+  background: rgba(0, 0, 0, .03);
+}
+
+/* Per-row add/remove, revealed on hover so the CV still reads as a CV. */
+.row-tools {
+  display: inline-flex; gap: 2px; margin-left: 6px;
+  opacity: 0; transition: opacity .12s ease; vertical-align: middle;
+  user-select: none;
+}
+li:hover > .row-tools,
+p:hover > .row-tools,
+h3:hover > .row-tools,
+.skill:hover > .row-tools,
+.lang-row:hover > .row-tools,
+.prod-card:hover > .row-tools { opacity: 1; }
+.row-tools button {
+  appearance: none; border: 1px solid var(--rule-strong); background: #fff;
+  color: var(--muted); width: 17px; height: 17px; line-height: 1;
+  border-radius: 4px; font-size: 10px; cursor: pointer; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.row-tools button:hover { border-color: var(--accent); color: var(--accent); }
+.row-tools button:last-child:hover { border-color: #c9584a; color: #b4271b; }
+
+/* Product cards are <div> while editing (no navigation on click). */
+.is-editing .prod-card { cursor: default; }
+.is-editing .prod-card:hover { transform: none; }
+
+.pane-hint {
+  max-width: var(--maxw); margin: 0 auto 12px; font-size: 11px;
+  color: var(--muted); text-align: center;
+}
+.pane-hint b { color: var(--ink-soft); font-weight: 600; }
+
+/* ---------- Company / school mark in the date gutter ---------- */
+.xp .when .co-logo {
+  display: block; margin: 9px 0 0 auto;
+  max-height: 26px; max-width: 118px; width: auto;
+  object-fit: contain; opacity: .92;
+}
+
+@media print {
+  /* Strip only the editing affordances. An `all: unset` here would also wipe
+     the element's own class styling — `.prod-name` and friends share these
+     elements — so reset just the properties inline editing adds. */
+  .row-tools, .pane-hint { display: none !important; }
+  .ed-f {
+    background: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    cursor: auto;
+  }
+  /* An untouched optional field is not part of the printed CV. Drop the whole
+     contact item, otherwise its icon prints with nothing beside it. */
+  .ed-f.is-empty { display: none !important; }
+  .ed-f.is-empty::before { content: none !important; }
+  .contact .item:has(> .ed-f.is-empty) { display: none !important; }
+}

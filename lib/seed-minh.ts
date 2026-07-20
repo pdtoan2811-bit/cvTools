@@ -28,6 +28,7 @@ export const MINH: CvData = {
       role: "Enterprise AE",
       company: "Avada Group, Avada Commerce",
       period: "Nov 2024 — Present",
+      logo: "/logos/co/avada.svg",
       headline: "Brought Joy to the world",
       points: [
         "Source and close new business for Joy Loyalty, Avada Commerce's flagship solution, across inbound and outbound channels",
@@ -68,12 +69,19 @@ export const MINH: CvData = {
           url: "https://apps.shopify.com/joy-subscription",
           logo: "/logos/joy-subscription.png",
         },
+        {
+          name: "Joy Wishlist",
+          tagline: "Wishlists & save-for-later",
+          url: "https://apps.shopify.com/joy-wishlist",
+          logo: "/logos/joy.png",
+        },
       ],
     },
     {
       role: "B2B AE, Vietnam",
       company: "Savvycom Software Development",
       period: "Aug 2024 — Probation ended",
+      logo: "/logos/co/savvycom.svg",
       points: [
         "Identified new IT outsourcing opportunities in Vietnam and built relationships with domestic clients and vendors",
         "Ran client meetings to align on needs and coordinated Pre-sale and Delivery teams on execution",
@@ -92,6 +100,7 @@ export const MINH: CvData = {
       role: "B2B AE, Global",
       company: "Lit Group, LitExtension",
       period: "Aug 2023 — Aug 2024",
+      logo: "/logos/co/litgroup.svg",
       headline: "Found, approached, nurtured, increased revenue from new leads, and repeated",
       points: [
         "Sourced new e-commerce partners and business opportunities through outreach and team collaboration",
@@ -108,11 +117,27 @@ export const MINH: CvData = {
           ],
         },
       ],
+      productsLabel: "Products I sold",
+      products: [
+        {
+          name: "LitExtension",
+          tagline: "Shopping cart & store migration service",
+          url: "https://litextension.com",
+          logo: "/logos/co/litextension.svg",
+        },
+        {
+          name: "LitCommerce",
+          tagline: "Multi-channel selling for e-commerce",
+          url: "https://litcommerce.com",
+          logo: "/logos/co/litcommerce.png",
+        },
+      ],
     },
     {
       role: "Onboarding",
       company: "GemCommerce, Shopify GemPages",
       period: "Jan 2022 — Aug 2023",
+      logo: "/logos/co/gempages.jpg",
       headline: "Converted free users into loyal customers",
       points: [
         "Acquired 1,200+ new paying users through outreach; 95% retained as paying customers",
@@ -128,11 +153,21 @@ export const MINH: CvData = {
           ],
         },
       ],
+      productsLabel: "Product I sold & onboarded",
+      products: [
+        {
+          name: "GemPages",
+          tagline: "Shopify landing page & store builder",
+          url: "https://apps.shopify.com/gempages",
+          logo: "/logos/co/gempages.jpg",
+        },
+      ],
     },
     {
       role: "Writer & Customer Success",
       company: "GemCommerce, Shopify GemPages",
       period: "Apr 2021 — Dec 2022",
+      logo: "/logos/co/gempages.jpg",
       headline: "Wrote tried-and-true help docs that guide users on how to make the most of GemPages",
       points: [
         "Wrote 200+ help articles and supported 10,000+ Shopify merchants via chat, email, and video calls",
@@ -145,11 +180,21 @@ export const MINH: CvData = {
           ],
         },
       ],
+      productsLabel: "Product I supported",
+      products: [
+        {
+          name: "GemPages",
+          tagline: "Shopify landing page & store builder",
+          url: "https://apps.shopify.com/gempages",
+          logo: "/logos/co/gempages.jpg",
+        },
+      ],
     },
     {
       role: "Tech Support",
       company: "Tek Experts, on behalf of Microsoft",
       period: "Feb 2020 — Mar 2021",
+      logo: "/logos/co/teknowledge.svg",
       headline: "Got Office apps up & running, and Microsoft customers happy",
       points: [
         "Supported 300+ monthly Microsoft customers on Office and account issues via chat and phone",
@@ -168,6 +213,7 @@ export const MINH: CvData = {
       role: "Sales Associate",
       company: "Asia Eyes Travel | Paloma Cruise Halong Bay",
       period: "Feb 2019 — Jul 2019",
+      logo: "/logos/co/asiaeyes.png",
       headline: "Helped foreign tourists discover Vietnam in the most affordable ways",
       points: [
         "Closed an $8K tourism deal two months into the role; built custom Southeast Asia itineraries for foreign travelers",
@@ -177,6 +223,7 @@ export const MINH: CvData = {
       role: "Copywriter / Translator / Editor",
       company: "Vietnamnet.vn | Tintucvietnam.vn",
       period: "Jun 2017 — Jan 2019",
+      logo: "/logos/co/vietnamnet.png",
       headline: "Brought cutting-edge tech news to thousands of online readers",
       points: [
         "Covered tech, politics, and military news; translated and interpreted for international partners",
@@ -197,6 +244,7 @@ export const MINH: CvData = {
       degree: "Bachelor's degree of Spanish Language",
       school: "Hanoi University",
       period: "2013 — 2018",
+      logo: "/logos/co/hanu.png",
       certifications: [
         "Certified Level C1 of Spanish language (Hanoi University)",
         "Oxford CEFR C2 level of English (2021, GemCommerce)",

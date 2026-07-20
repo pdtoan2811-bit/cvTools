@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CvDocument from "@/components/CvDocument";
+import { EditContext, focusKey, type EditApi } from "@/components/Editable";
 import ImagePicker from "./ImagePicker";
 import { Area, ItemHead, Lines, Panel, Text, listOps } from "./fields";
 import { cleanCv } from "@/lib/clean";
+import { setIn, spliceIn, type Path } from "@/lib/path";
 import { fetchJson } from "@/lib/fetch-json";
 import type {
   AchievementGroup,
@@ -27,6 +29,7 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
+  const [pendingFocus, setPendingFocus] = useState<string | null>(null);
   const dirty = useRef(false);
 
   const set = useCallback(<K extends keyof CvData>(key: K, value: CvData[K]) => {
@@ -44,6 +47,33 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
         setData((d) => ({ ...d, [key]: updater((d[key] || []) as NonNullable<CvData[K]>) }));
       },
     [],
+  );
+
+  /**
+   * The API the rendered CV uses to edit itself in place. Paths address the
+   * document directly, so a field commits without the editor knowing it exists.
+   */
+  const editApi = useMemo<EditApi>(
+    () => ({
+      set: (path: Path, value: string) => {
+        dirty.current = true;
+        setData((d) => setIn(d, path, value));
+      },
+      insert: (path: Path, index: number, item: unknown) => {
+        dirty.current = true;
+        setData((d) => spliceIn(d, path, index, 0, item));
+        setPendingFocus(focusKey([...path, index]));
+      },
+      remove: (path: Path, index: number) => {
+        dirty.current = true;
+        setData((d) => spliceIn(d, path, index, 1));
+        // Fall back to the entry above, the way a list behaves everywhere else.
+        if (index > 0) setPendingFocus(focusKey([...path, index - 1]));
+      },
+      pendingFocus,
+      focusClaimed: () => setPendingFocus(null),
+    }),
+    [pendingFocus],
   );
 
   const save = useCallback(async () => {
@@ -501,10 +531,18 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
           </Panel>
         </div>
 
-        {/* ---------------- Live preview ---------------- */}
+        {/* ------------- Live preview, editable in place ------------- */}
         <div className="preview-pane">
+          <p className="pane-hint">
+            Click any text below to edit it. <b>Enter</b> adds another bullet,
+            <b> Backspace</b> on an empty one removes it, <b>Esc</b> cancels.
+          </p>
           <div className="sheet">
-            <CvDocument data={cleanCv(data)} />
+            {/* Not `cleanCv` here — stripping blanks mid-edit would delete the
+                empty bullet you just made room for. */}
+            <EditContext.Provider value={editApi}>
+              <CvDocument data={data} />
+            </EditContext.Provider>
           </div>
         </div>
       </div>
