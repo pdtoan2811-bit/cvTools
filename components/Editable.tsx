@@ -34,6 +34,20 @@ export const EditContext = createContext<EditApi | null>(null);
 
 export const useEdit = () => useContext(EditContext);
 
+/**
+ * Which CV is being edited, and with what key. The upload and thumbnail
+ * endpoints require this, so the pickers read it from here rather than having
+ * it threaded through every call site.
+ */
+export type CvSession = { id: string; editKey: string };
+export const SessionContext = createContext<CvSession | null>(null);
+export const useSession = () => useContext(SessionContext);
+
+/** Query string that authorises a write for the current CV. */
+export function authQuery(session: CvSession | null): string {
+  return session ? `cv=${encodeURIComponent(session.id)}&k=${encodeURIComponent(session.editKey)}` : "";
+}
+
 type TProps = {
   /** Where this text lives in the CV document. */
   path: Path;

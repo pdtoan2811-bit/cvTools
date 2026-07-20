@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { fetchJson } from "@/lib/fetch-json";
+import { authQuery, useSession } from "@/components/Editable";
 
 type Props = {
   label: string;
@@ -22,6 +23,7 @@ type Props = {
  *   Paste  — type any image URL directly
  */
 export default function ImagePicker({ label, value, onChange, auto }: Props) {
+  const session = useSession();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<"upload" | "auto" | null>(null);
   const [note, setNote] = useState("");
@@ -34,7 +36,10 @@ export default function ImagePicker({ label, value, onChange, auto }: Props) {
     try {
       const body = new FormData();
       body.append("file", file);
-      const json = await fetchJson<{ url: string }>("/api/upload", { method: "POST", body });
+      const json = await fetchJson<{ url: string }>(`/api/upload?${authQuery(session)}`, {
+        method: "POST",
+        body,
+      });
       onChange(json.url, undefined);
       setNote("Uploaded");
     } catch (e) {
@@ -54,6 +59,10 @@ export default function ImagePicker({ label, value, onChange, auto }: Props) {
       const qs = new URLSearchParams();
       if (auto.url) qs.set("url", auto.url);
       if (auto.name) qs.set("name", auto.name);
+      if (session) {
+        qs.set("cv", session.id);
+        qs.set("k", session.editKey);
+      }
       const json = await fetchJson<{ url: string; bg?: string; source: string }>(
         `/api/thumbnail?${qs}`,
       );

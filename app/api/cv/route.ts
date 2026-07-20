@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { jsonRoute } from "@/lib/api";
+import { adminToken, canCreate } from "@/lib/auth";
 import { createCv, listCvs } from "@/lib/store";
 import { MINH } from "@/lib/seed-minh";
 import { emptyCv, type CvData } from "@/lib/types";
@@ -7,7 +8,10 @@ import { emptyCv, type CvData } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 /** GET /api/cv — index of stored CVs (no edit keys). */
-export const GET = jsonRoute(async () => {
+export const GET = jsonRoute(async (req: Request) => {
+  if (adminToken() && !canCreate(req)) {
+    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+  }
   const records = await listCvs();
   return NextResponse.json({
     cvs: records.map((r) => ({
@@ -26,6 +30,13 @@ export const GET = jsonRoute(async () => {
  * editor URL from then on.
  */
 export const POST = jsonRoute(async (req: Request) => {
+  if (!canCreate(req)) {
+    return NextResponse.json(
+      { error: "Creating CVs on this deployment requires the admin token." },
+      { status: 403 },
+    );
+  }
+
   const body = (await req.json().catch(() => ({}))) as {
     seed?: string;
     data?: CvData;

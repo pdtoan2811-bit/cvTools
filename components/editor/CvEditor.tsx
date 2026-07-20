@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CvDocument from "@/components/CvDocument";
-import { EditContext, focusKey, type EditApi } from "@/components/Editable";
+import { EditContext, SessionContext, focusKey, type EditApi } from "@/components/Editable";
 import ImagePicker from "./ImagePicker";
 import { Area, ItemHead, Lines, Panel, Text, listOps } from "./fields";
 import { cleanCv } from "@/lib/clean";
@@ -131,7 +131,7 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
   const link = listOps<Link>(setList("links"));
 
   return (
-    <>
+    <SessionContext.Provider value={{ id, editKey }}>
       <div className="ed-bar">
         <span className="title">
           Editing <b>{data.name || "Untitled"}</b>
@@ -546,7 +546,7 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
           </div>
         </div>
       </div>
-    </>
+    </SessionContext.Provider>
   );
 }
 

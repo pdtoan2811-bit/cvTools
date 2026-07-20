@@ -13,9 +13,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const record = await getCv(id);
   if (!record) return { title: "CV not found" };
   const { name, title } = record.data;
+  const description = title ? `${name} — ${title}` : name;
   return {
     title: `CV — ${name}`,
-    description: title ? `${name} — ${title}` : name,
+    description,
+    // A CV carries a phone number and an email. The link is meant to be shared
+    // deliberately, not discovered in a search result, and the id is the only
+    // thing protecting it — so keep it out of indexes.
+    robots: { index: false, follow: false, nocache: true },
+    openGraph: { title: `CV — ${name}`, description, type: "profile" },
   };
 }
 

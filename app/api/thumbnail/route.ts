@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { findKnownLogo } from "@/lib/logo-library";
 import { jsonRoute } from "@/lib/api";
+import { FORBIDDEN, hasEditSession } from "@/lib/auth";
+import { publicUrlOrNull } from "@/lib/safe-url";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 20;
@@ -21,14 +23,6 @@ export const maxDuration = 20;
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36";
-
-function normalizeUrl(raw: string): URL | null {
-  try {
-    return new URL(raw.startsWith("http") ? raw : `https://${raw}`);
-  } catch {
-    return null;
-  }
-}
 
 /** Pull the first matching attribute value out of a <meta>/<link> tag. */
 function metaContent(html: string, patterns: RegExp[]): string | null {
@@ -84,6 +78,12 @@ async function mirror(imageUrl: string): Promise<string> {
 }
 
 export const GET = jsonRoute(async (req: Request) => {
+  // This route fetches a caller-supplied URL and can mirror it into Blob, so
+  // it is gated the same way uploads are.
+  if (!(await hasEditSession(req))) {
+    return NextResponse.json(FORBIDDEN, { status: 403 });
+  }
+
   const params = new URL(req.url).searchParams;
   const rawUrl = params.get("url") || "";
   const name = params.get("name") || "";
@@ -94,9 +94,9 @@ export const GET = jsonRoute(async (req: Request) => {
     return NextResponse.json({ url: known.file, bg: known.bg, source: "library" });
   }
 
-  const target = normalizeUrl(rawUrl);
-  if (!target || !/^https?:$/.test(target.protocol)) {
-    return NextResponse.json({ error: "No logo found" }, { status: 404 });
+  const target = await publicUrlOrNull(rawUrl);
+  if (!target) {
+    return NextResponse.json({ error: "No logo found for that link" }, { status: 404 });
   }
 
   try {

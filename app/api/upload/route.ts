@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { jsonRoute } from "@/lib/api";
+import { FORBIDDEN, hasEditSession } from "@/lib/auth";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -25,6 +26,11 @@ const EXT: Record<string, string> = {
  * local development works with no cloud setup.
  */
 export const POST = jsonRoute(async (req: Request) => {
+  // Uploads write to the Blob store, so they need the CV's edit key.
+  if (!(await hasEditSession(req))) {
+    return NextResponse.json(FORBIDDEN, { status: 403 });
+  }
+
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
 

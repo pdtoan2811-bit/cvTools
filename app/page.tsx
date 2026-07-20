@@ -6,13 +6,17 @@ export const dynamic = "force-dynamic";
 
 /**
  * Edit links contain the secret edit key, so the index only reveals them to
- * the owner: either local development (data lives in `.data/`, not shared) or
- * `/?admin=<ADMIN_TOKEN>` in production.
+ * the owner: `/?admin=<ADMIN_TOKEN>`, or a local machine when no token is set.
+ *
+ * The signal here is deliberately the deployment, not the storage driver. An
+ * earlier version keyed off BLOB_READ_WRITE_TOKEN as a stand-in for "local
+ * dev", which meant a deployment that had not finished its Blob setup — or any
+ * hosted run without it — published every edit key on its front page.
  */
 function canSeeEditLinks(admin: string | undefined) {
   const token = process.env.ADMIN_TOKEN;
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return true; // local dev
-  return Boolean(token) && admin === token;
+  if (token) return admin === token;
+  return !process.env.VERCEL;
 }
 
 export default async function Home({
@@ -58,7 +62,7 @@ export default async function Home({
             Start from Minh&apos;s CV as transcribed from his PDF, or from a blank document in
             the same editorial design.
           </p>
-          <NewCvButtons />
+          <NewCvButtons admin={admin} />
         </div>
 
         <div className="card">

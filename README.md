@@ -48,13 +48,46 @@ depends on someone else's hotlink staying up.
 To add a logo permanently, drop the file in `public/logos/` and add an entry to
 `LOGO_LIBRARY`.
 
-## Deploying to Vercel
+## Launch checklist
 
-1. Import this repo in Vercel (framework auto-detects as Next.js).
-2. **Storage → Create → Blob**, connect it to the project. That injects
-   `BLOB_READ_WRITE_TOKEN`, which is all the app needs.
-3. Optionally add `ADMIN_TOKEN` to unlock editor links on the home page.
-4. Deploy.
+1. **Import the repo** in Vercel — it auto-detects Next.js, no build settings
+   needed.
+2. **Storage → Create → Blob**, connect it to the project. This injects
+   `BLOB_READ_WRITE_TOKEN`. Without it the app has nowhere to save and the home
+   page says so.
+3. **Set `ADMIN_TOKEN`** to a long random string (Settings → Environment
+   Variables, all environments). Do this *before* sharing the URL — see below.
+4. **Redeploy** so both variables are picked up.
+5. Open `/?admin=<your token>`, create the CV, and copy the two links it shows.
+6. Optional: Settings → Functions → set the region to Singapore (`sin1`) if your
+   readers are in Vietnam. Hobby plans allow one region, chosen here rather than
+   in `vercel.json`.
+
+### Why `ADMIN_TOKEN` matters
+
+Without it, anyone who finds the deployment URL can create CVs and the home page
+lists every stored CV's editor link. With it:
+
+| Action | Who can do it |
+| --- | --- |
+| View `/cv/<id>` | anyone with the link |
+| Edit `/edit/<id>?k=…` | anyone with that CV's editor link |
+| Create a CV, list CVs, see editor links | only `?admin=<token>` |
+| Upload an image, resolve a logo | only with a valid edit key or admin token |
+
+The share link is safe to post anywhere. The editor link is the password for
+that one CV — send it to Minh directly and to nobody else.
+
+### What is deliberately locked down
+
+- `/api/upload` and `/api/thumbnail` both write to Blob, so both require a valid
+  `cv` + `k` pair. Otherwise a stranger could fill your storage.
+- `/api/thumbnail` fetches a URL you give it. It resolves the hostname first and
+  refuses private, loopback, link-local, and cloud-metadata addresses, so it
+  cannot be used to reach inside the deployment's network.
+- CV and editor pages send `noindex`, and `robots.txt` disallows both. A CV
+  carries a phone number and an email; the link is meant to be shared
+  deliberately, not found in a search result.
 
 ## Local development
 
@@ -66,6 +99,10 @@ npm run dev        # http://localhost:3000
 Without `BLOB_READ_WRITE_TOKEN` the app stores CVs in a gitignored `.data/`
 folder and uploads into `public/uploads/`, so it runs with no cloud setup. To
 develop against real Blob storage, run `vercel env pull .env.local` first.
+
+Locally, with no `ADMIN_TOKEN` set, creating CVs and seeing editor links is
+open — it is your own machine. Setting `ADMIN_TOKEN` applies the production
+rules everywhere, which is the way to test them.
 
 ## Layout
 
