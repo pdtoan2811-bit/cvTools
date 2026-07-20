@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
 import { findKnownLogo } from "@/lib/logo-library";
 import { jsonRoute } from "@/lib/api";
-import { FORBIDDEN, hasEditSession } from "@/lib/auth";
 import { publicUrlOrNull } from "@/lib/safe-url";
 
 export const dynamic = "force-dynamic";
@@ -50,40 +48,31 @@ async function fetchHtml(url: URL) {
 const faviconFor = (host: string) =>
   `https://www.google.com/s2/favicons?domain=${host}&sz=128`;
 
-/** Mirror a remote image into Blob so the CV never depends on a hotlink. */
-async function mirror(imageUrl: string): Promise<string> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return imageUrl;
+const INLINE_MAX_BYTES = 96 * 1024;
+
+/**
+ * Fetch a logo and hand it back as a data URL, so it becomes part of the CV
+ * document rather than a hotlink to someone else's server. Anything too big to
+ * embed comfortably falls back to its address.
+ */
+async function inline(imageUrl: string): Promise<string> {
   try {
     const res = await fetch(imageUrl, {
       headers: { "user-agent": UA },
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return imageUrl;
-    const type = res.headers.get("content-type") || "image/png";
+    const type = (res.headers.get("content-type") || "").split(";")[0];
     if (!type.startsWith("image/")) return imageUrl;
-    const ext = type.includes("svg")
-      ? "svg"
-      : type.includes("jpeg")
-        ? "jpg"
-        : type.split("/")[1]?.split(";")[0] || "png";
-    const blob = await put(
-      `logos/auto-${crypto.randomUUID().slice(0, 12)}.${ext}`,
-      await res.arrayBuffer(),
-      { access: "public", contentType: type, addRandomSuffix: false },
-    );
-    return blob.url;
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength > INLINE_MAX_BYTES) return imageUrl;
+    return `data:${type};base64,${Buffer.from(buf).toString("base64")}`;
   } catch {
     return imageUrl;
   }
 }
 
 export const GET = jsonRoute(async (req: Request) => {
-  // This route fetches a caller-supplied URL and can mirror it into Blob, so
-  // it is gated the same way uploads are.
-  if (!(await hasEditSession(req))) {
-    return NextResponse.json(FORBIDDEN, { status: 403 });
-  }
-
   const params = new URL(req.url).searchParams;
   const rawUrl = params.get("url") || "";
   const name = params.get("name") || "";
@@ -129,13 +118,13 @@ export const GET = jsonRoute(async (req: Request) => {
       // A bare .ico is usually 16px — too small for a card. Ask the favicon
       // service for a 128px render of the same site instead.
       if (abs.pathname.toLowerCase().endsWith(".ico")) {
-        return NextResponse.json({ url: await mirror(faviconFor(abs.host)), source: "favicon" });
+        return NextResponse.json({ url: await inline(faviconFor(abs.host)), source: "favicon" });
       }
-      return NextResponse.json({ url: await mirror(abs.href), source: "page" });
+      return NextResponse.json({ url: await inline(abs.href), source: "page" });
     }
 
     // 3. Favicon service on the resolved host.
-    return NextResponse.json({ url: await mirror(faviconFor(finalUrl.host)), source: "favicon" });
+    return NextResponse.json({ url: await inline(faviconFor(finalUrl.host)), source: "favicon" });
   } catch {
     return NextResponse.json({ error: "Could not resolve a logo" }, { status: 404 });
   }

@@ -1,93 +1,87 @@
 # CV Tools
 
-An editorial-style CV builder: edit in the browser, upload images, share a
-read-only link, export to PDF. Deploys to Vercel.
+An editorial-style CV builder: open it, edit the CV in place, share it as a
+link, export a PDF. Deploy it to Vercel and it works — there is nothing to
+create, configure, or sign into.
 
-The design is the same magazine layout as the original static CV in this
-repo's parent folder — display serif (Fraunces) for headings, Inter for body,
-warm paper, numbered sections, an experience timeline, and monochrome brand
-icons — rebuilt as a Next.js app with a live editor.
+The design is the magazine layout from the static CV in this repo's parent
+folder — display serif (Fraunces) for headings, Inter for body, warm paper,
+numbered sections, an experience timeline, and monochrome brand icons — rebuilt
+as a Next.js app you can type directly into.
 
-## How sharing works
+## Deploying
 
-Every CV has two links:
+Import the repo in Vercel and press deploy. That is the whole setup: no
+database, no storage bucket, no environment variables, no accounts.
 
-| Link | Who gets it | What it does |
-| --- | --- | --- |
-| `/cv/<id>` | anyone | public, read-only, **Export PDF** |
-| `/edit/<id>?k=<editKey>` | only the owner | full editor with live preview |
+Opening the deployment drops you straight into the editor with Bùi Công Minh's
+CV loaded, transcribed from his PDF.
 
-The edit key **is** the password — there are no accounts. Anyone holding the
-editor link can change that CV, so send it only to the person who should be
-editing. The public view never exposes the key.
+## How it works
 
-The home page hides editor links by default. Set an `ADMIN_TOKEN` env var and
-open `/?admin=<token>` to get them back.
+**Your working copy lives in your browser.** Edits save to `localStorage` a
+moment after you stop typing, so a reload picks up where you left off. Nothing
+is uploaded and no server holds your data.
+
+**Sharing is a link, not a record.** *Share* compresses the whole CV into the
+URL fragment — the part after `#`, which browsers never send to a server. Send
+that link and the recipient sees the CV, can export a PDF, and can press
+**Edit a copy** to take it into their own browser and change it. Minh's CV runs
+about a 5 KB link.
+
+That means a shared CV keeps working even if this site goes away, and a
+document holding someone's phone number and email never touches a request log
+or a `Referer` header.
+
+**Images travel inside the document.** Uploading a photo resizes it in the
+browser and stores it as a data URL, so there is no upload endpoint and no
+bucket to configure. Portraits are capped at 480px, logos at 256px, which keeps
+share links small.
+
+### Trade-offs, plainly
+
+- Clearing your browser data clears the CV. Use **Download JSON** in the share
+  panel for a backup, and re-import it from the *Import / export JSON* panel.
+- Two people editing the same CV get two separate copies. Whoever changes
+  something sends a fresh link back.
+- Very image-heavy CVs make long links. The share panel warns you and suggests
+  sending the JSON file instead.
 
 ## Thumbnails
 
-Each product, client, and project entry has a thumbnail, resolvable three ways:
+Each product, client, and project entry has a thumbnail, filled three ways:
 
 1. **Auto** — `/api/thumbnail` resolves a logo in this order:
    - the **known-logo library** in `lib/logo-library.ts`, seeded from the
-     original CV's `logos/` folder. Entries naming the same product or company
-     (Joy, Joy Subscription, Chatty, ShopVid, Adecos, tocco, Vinamilk,
-     Allbirds…) reuse that exact asset.
+     original CV's `logos/` folder plus every company and brand in Minh's CV.
+     Entries naming the same product or company reuse that exact asset.
    - the page's `og:image` / `twitter:image` / `apple-touch-icon`. Short links
-     (bit.ly, …) are followed to their destination first, then re-checked
+     (bit.ly, ...) are followed to their destination first, then re-checked
      against the library.
    - the site's favicon at 128px. Bare 16px `.ico` files are upgraded to this
      rather than used directly.
-2. **Upload** — any PNG / JPEG / WebP / GIF / SVG up to 5 MB.
+   Small results are inlined into the document as data URLs, so a CV never
+   depends on someone else's hotlink staying up.
+2. **Upload** — any PNG / JPEG / WebP / GIF / SVG, resized in the browser.
 3. **Paste** — type an image URL into the field.
 
 If none is set, the CV renders a monogram or a matched line icon instead of a
-broken image. Auto-resolved remote images are mirrored into Blob so a CV never
-depends on someone else's hotlink staying up.
+broken image.
 
 To add a logo permanently, drop the file in `public/logos/` and add an entry to
 `LOGO_LIBRARY`.
 
-## Launch checklist
+This is the only route that talks to a server. It fetches a URL you give it, so
+it resolves the hostname first and refuses private, loopback, link-local, and
+cloud-metadata addresses — it cannot be used to reach inside the deployment's
+network.
 
-1. **Import the repo** in Vercel — it auto-detects Next.js, no build settings
-   needed.
-2. **Storage → Create → Blob**, connect it to the project. This injects
-   `BLOB_READ_WRITE_TOKEN`. Without it the app has nowhere to save and the home
-   page says so.
-3. **Set `ADMIN_TOKEN`** to a long random string (Settings → Environment
-   Variables, all environments). Do this *before* sharing the URL — see below.
-4. **Redeploy** so both variables are picked up.
-5. Open `/?admin=<your token>`, create the CV, and copy the two links it shows.
-6. Optional: Settings → Functions → set the region to Singapore (`sin1`) if your
-   readers are in Vietnam. Hobby plans allow one region, chosen here rather than
-   in `vercel.json`.
+## Editing
 
-### Why `ADMIN_TOKEN` matters
-
-Without it, anyone who finds the deployment URL can create CVs and the home page
-lists every stored CV's editor link. With it:
-
-| Action | Who can do it |
-| --- | --- |
-| View `/cv/<id>` | anyone with the link |
-| Edit `/edit/<id>?k=…` | anyone with that CV's editor link |
-| Create a CV, list CVs, see editor links | only `?admin=<token>` |
-| Upload an image, resolve a logo | only with a valid edit key or admin token |
-
-The share link is safe to post anywhere. The editor link is the password for
-that one CV — send it to Minh directly and to nobody else.
-
-### What is deliberately locked down
-
-- `/api/upload` and `/api/thumbnail` both write to Blob, so both require a valid
-  `cv` + `k` pair. Otherwise a stranger could fill your storage.
-- `/api/thumbnail` fetches a URL you give it. It resolves the hostname first and
-  refuses private, loopback, link-local, and cloud-metadata addresses, so it
-  cannot be used to reach inside the deployment's network.
-- CV and editor pages send `noindex`, and `robots.txt` disallows both. A CV
-  carries a phone number and an email; the link is meant to be shared
-  deliberately, not found in a search result.
+Click any text on the CV and type. **Enter** opens the next bullet,
+**Backspace** on an empty one removes it, **Esc** cancels an edit, and hovering
+a row reveals **+** / **✕**. The left panel handles images and anything
+structural — adding jobs, reordering, importing and exporting JSON.
 
 ## Local development
 
@@ -96,40 +90,34 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
-Without `BLOB_READ_WRITE_TOKEN` the app stores CVs in a gitignored `.data/`
-folder and uploads into `public/uploads/`, so it runs with no cloud setup. To
-develop against real Blob storage, run `vercel env pull .env.local` first.
+No environment variables, in development or production.
 
-Locally, with no `ADMIN_TOKEN` set, creating CVs and seeing editor links is
-open — it is your own machine. Setting `ADMIN_TOKEN` applies the production
-rules everywhere, which is the way to test them.
+## Export a PDF
+
+Click **PDF**, then choose **Save as PDF**, margins **None**, and enable
+**Background graphics** to keep the paper tint and accent colours. The
+stylesheet has A4 print rules that keep bullets, cards, and headings from
+splitting awkwardly across pages, and it drops the editing affordances.
 
 ## Layout
 
 ```
 app/
-  page.tsx              home — create a CV, list existing ones
-  cv/[id]/page.tsx      public read-only view + Export PDF
-  edit/[id]/page.tsx    editor, gated on the edit key
-  api/cv/               create / read / update
-  api/upload/           image upload → Blob
-  api/thumbnail/        logo auto-resolution
+  page.tsx              the app — editor, opened on a real CV
+  cv/page.tsx           read-only view of a shared link
+  api/thumbnail/        logo auto-resolution (the only server route)
   globals.css           the CV design, then app chrome under "APP UI"
 components/
-  CvDocument.tsx        the CV sheet itself (pure presentation)
-  Icon.tsx              inline SVG icons
-  editor/               editor panes, fields, image picker
+  Workspace.tsx         picks the CV to open: shared link > this browser > seed
+  CvDocument.tsx        the CV sheet; renders read-only or inline-editable
+  SharedCv.tsx          shared-link view + "Edit a copy"
+  Editable.tsx          the inline-edit primitives
+  editor/               editor panes, fields, image picker, share panel
 lib/
   types.ts              the CV document shape
-  store.ts              Blob persistence (+ local fallback)
+  share.ts              CV <-> compressed URL fragment
+  local-store.ts        the browser working copy
+  image.ts              client-side resize to data URLs
   logo-library.ts       known-logo matching
-  seed-minh.ts          starter data
-  icon-data.ts          generated from the original icons.js
+  seed-minh.ts          the CV that ships with the app
 ```
-
-## Exporting a PDF
-
-Click **Export PDF**, then in the print dialog choose **Save as PDF**, margins
-**None**, and enable **Background graphics** to keep the paper tint and accent
-colours. The stylesheet has A4 print rules that keep bullets, cards, and
-headings from splitting awkwardly across pages.

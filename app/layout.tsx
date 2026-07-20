@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: "Editorial CV builder — edit, upload, share, export to PDF.",
   applicationName: "CV Tools",
   formatDetection: { telephone: false },
+  robots: { index: false, follow: false },
 };
 
 export const viewport: Viewport = {

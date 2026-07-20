@@ -504,14 +504,45 @@ textarea.tx { resize: vertical; min-height: 62px; }
 }
 .ed-bar .title b { color: var(--ink); }
 
-.sharebox {
-  display: flex; align-items: center; gap: 8px;
-  background: #fff; border: 1px dashed var(--accent-soft); border-radius: 6px;
-  padding: 8px 10px; font-size: 11.5px;
+/* ---------- Share popover ---------- */
+.share-pop {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; width: min(440px, 92vw);
+  background: var(--paper); border: 1px solid var(--rule-strong); border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(40,34,24,.18); padding: 16px; text-align: left;
+  font-size: 12px; text-transform: none; letter-spacing: 0; font-weight: 400;
 }
-.sharebox code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px;
-  color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.share-head {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;
+  font-size: 12.5px; line-height: 1.4;
+}
+.share-head b { font-weight: 600; }
+.share-head .x {
+  margin-left: auto; appearance: none; border: none; background: none;
+  color: var(--muted); cursor: pointer; font-size: 13px; padding: 0 2px;
+}
+.share-head .x:hover { color: var(--ink); }
+textarea.tx.share-link {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px;
+  color: var(--accent); resize: none; word-break: break-all; margin-bottom: 10px;
+}
+.ed-bar .actions { position: relative; }
+
+/* First-run note when you open someone else's shared CV. */
+.card.note { border-color: var(--accent-soft); background: #f2f6fd; }
+.card.note h3 { color: #17488f; }
+
+/* ---------- Boot ---------- */
+.boot {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 60vh; color: var(--muted); font-size: 12.5px;
+}
+.boot-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--accent-soft);
+  animation: boot-pulse 1s ease-in-out infinite;
+}
+@keyframes boot-pulse {
+  0%, 100% { opacity: .25; transform: scale(.85); }
+  50%      { opacity: 1;   transform: scale(1); }
 }
 
 @media print {

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { fetchJson } from "@/lib/fetch-json";
-import { authQuery, useSession } from "@/components/Editable";
+import { fileToDataUrl } from "@/lib/image";
 
 type Props = {
   label: string;
@@ -14,6 +14,8 @@ type Props = {
   onChange: (url: string, bg?: string) => void;
   /** When set, an "Auto" button resolves a logo from this entry's URL / name. */
   auto?: { url?: string; name?: string };
+  /** Longest edge to keep. Portraits want more detail than a 32px logo tile. */
+  maxPx?: number;
 };
 
 /**
@@ -22,26 +24,24 @@ type Props = {
  *   Auto   — resolve a logo from the entry's URL via /api/thumbnail
  *   Paste  — type any image URL directly
  */
-export default function ImagePicker({ label, value, onChange, auto }: Props) {
-  const session = useSession();
+export default function ImagePicker({ label, value, onChange, auto, maxPx = 256 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<"upload" | "auto" | null>(null);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
-  async function upload(file: File) {
+  /**
+   * Resized in the browser and stored inside the CV, so adding a picture needs
+   * no upload endpoint and no configured bucket.
+   */
+  async function addImage(file: File) {
     setBusy("upload");
     setError("");
     setNote("");
     try {
-      const body = new FormData();
-      body.append("file", file);
-      const json = await fetchJson<{ url: string }>(`/api/upload?${authQuery(session)}`, {
-        method: "POST",
-        body,
-      });
-      onChange(json.url, undefined);
-      setNote("Uploaded");
+      const dataUrl = await fileToDataUrl(file, { maxPx });
+      onChange(dataUrl, undefined);
+      setNote("Added");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -59,10 +59,6 @@ export default function ImagePicker({ label, value, onChange, auto }: Props) {
       const qs = new URLSearchParams();
       if (auto.url) qs.set("url", auto.url);
       if (auto.name) qs.set("name", auto.name);
-      if (session) {
-        qs.set("cv", session.id);
-        qs.set("k", session.editKey);
-      }
       const json = await fetchJson<{ url: string; bg?: string; source: string }>(
         `/api/thumbnail?${qs}`,
       );
@@ -104,7 +100,7 @@ export default function ImagePicker({ label, value, onChange, auto }: Props) {
               disabled={busy !== null}
               onClick={() => fileRef.current?.click()}
             >
-              {busy === "upload" ? "Uploading…" : "Upload"}
+              {busy === "upload" ? "Adding…" : "Upload"}
             </button>
             {auto && (
               <button
@@ -134,7 +130,7 @@ export default function ImagePicker({ label, value, onChange, auto }: Props) {
         hidden
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f) void upload(f);
+          if (f) void addImage(f);
         }}
       />
     </div>

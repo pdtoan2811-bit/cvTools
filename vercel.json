@@ -4,9 +4,6 @@
   "functions": {
     "app/api/thumbnail/route.ts": {
       "maxDuration": 20
-    },
-    "app/api/upload/route.ts": {
-      "maxDuration": 30
     }
   },
   "headers": [
@@ -24,12 +21,7 @@
         {
           "key": "X-Frame-Options",
           "value": "SAMEORIGIN"
-        }
-      ]
-    },
-    {
-      "source": "/(cv|edit)/(.*)",
-      "headers": [
+        },
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"

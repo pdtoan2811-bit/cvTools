@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CvDocument from "@/components/CvDocument";
-import { EditContext, SessionContext, focusKey, type EditApi } from "@/components/Editable";
+import { EditContext, focusKey, type EditApi } from "@/components/Editable";
+import ShareBar from "./ShareBar";
 import ImagePicker from "./ImagePicker";
 import { Area, ItemHead, Lines, Panel, Text, listOps } from "./fields";
 import { cleanCv } from "@/lib/clean";
 import { setIn, spliceIn, type Path } from "@/lib/path";
-import { fetchJson } from "@/lib/fetch-json";
+import { saveLocal } from "@/lib/local-store";
 import type {
   AchievementGroup,
   Client,
@@ -20,17 +21,18 @@ import type {
   Project,
 } from "@/lib/types";
 
-type Props = { id: string; editKey: string; initial: CvData; isNew: boolean };
+type Props = { initial: CvData; source: "shared" | "local" | "seed" };
 
-const AUTOSAVE_MS = 1500;
+const AUTOSAVE_MS = 800;
 
-export default function CvEditor({ id, editKey, initial, isNew }: Props) {
+export default function CvEditor({ initial, source }: Props) {
   const [data, setData] = useState<CvData>(initial);
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "saved" | "error">(
+    source === "shared" ? "saved" : "idle",
+  );
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState("");
   const [pendingFocus, setPendingFocus] = useState<string | null>(null);
-  const dirty = useRef(false);
+  const dirty = useRef(source === "shared");
 
   const set = useCallback(<K extends keyof CvData>(key: K, value: CvData[K]) => {
     dirty.current = true;
@@ -76,48 +78,25 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
     [pendingFocus],
   );
 
-  const save = useCallback(async () => {
-    setStatus("saving");
-    setError("");
-    try {
-      await fetchJson(`/api/cv/${id}`, {
-        method: "PUT",
-        headers: { "content-type": "application/json", "x-edit-key": editKey },
-        body: JSON.stringify({ data: cleanCv(data) }),
-      });
+  /** Persist to this browser. There is no server to fail, only a quota. */
+  const save = useCallback(() => {
+    const result = saveLocal(cleanCv(data));
+    if (result.ok) {
       dirty.current = false;
       setStatus("saved");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError("");
+    } else {
+      setError(result.error);
       setStatus("error");
     }
-  }, [data, editKey, id]);
+  }, [data]);
 
   // Autosave a short moment after you stop typing.
   useEffect(() => {
     if (!dirty.current) return;
-    const t = setTimeout(() => void save(), AUTOSAVE_MS);
+    const t = setTimeout(save, AUTOSAVE_MS);
     return () => clearTimeout(t);
   }, [data, save]);
-
-  // Don't let a half-typed edit disappear on navigation.
-  useEffect(() => {
-    const warn = (e: BeforeUnloadEvent) => {
-      if (dirty.current) e.preventDefault();
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, []);
-
-  const shareUrl = typeof window === "undefined" ? "" : `${window.location.origin}/cv/${id}`;
-  const editUrl =
-    typeof window === "undefined" ? "" : `${window.location.origin}/edit/${id}?k=${editKey}`;
-
-  async function copy(text: string, which: string) {
-    await navigator.clipboard.writeText(text);
-    setCopied(which);
-    setTimeout(() => setCopied(""), 1600);
-  }
 
   const contact = data.contact || {};
   const setContact = (patch: Partial<CvData["contact"]>) =>
@@ -131,50 +110,30 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
   const link = listOps<Link>(setList("links"));
 
   return (
-    <SessionContext.Provider value={{ id, editKey }}>
+    <>
       <div className="ed-bar">
         <span className="title">
-          Editing <b>{data.name || "Untitled"}</b>
-          {status === "saving" && <span className="muted"> · saving…</span>}
-          {status === "saved" && <span className="ok"> · saved</span>}
+          <b>{data.name || "Untitled"}</b>
+          {status === "saved" && <span className="ok"> · saved in this browser</span>}
           {status === "error" && <span className="err"> · {error}</span>}
         </span>
         <div className="actions">
-          <a className="btn" href={`/cv/${id}`} target="_blank" rel="noopener">
-            View
-          </a>
           <button className="btn" onClick={() => window.print()}>
             ⬇ PDF
           </button>
-          <button className="btn primary" onClick={() => void save()} disabled={status === "saving"}>
-            Save
-          </button>
+          <ShareBar data={data} />
         </div>
       </div>
 
       <div className="editor-shell">
         <div className="editor-pane">
-          {isNew && (
-            <div className="card" style={{ padding: 16 }}>
-              <h3>Save these two links</h3>
-              <p>
-                The share link is public and read-only. The editor link is the password — anyone
-                with it can change this CV, so send it only to Minh.
+          {source === "shared" && (
+            <div className="card note" style={{ padding: 16 }}>
+              <h3>You opened a shared CV</h3>
+              <p style={{ margin: 0 }}>
+                It is yours to change now — edits save in this browser only. Use{" "}
+                <b>Share</b> when you want to send it back.
               </p>
-              <div className="stack">
-                <div className="sharebox">
-                  <code className="grow">{shareUrl}</code>
-                  <button className="btn sm" onClick={() => void copy(shareUrl, "share")}>
-                    {copied === "share" ? "Copied" : "Copy share link"}
-                  </button>
-                </div>
-                <div className="sharebox">
-                  <code className="grow">{editUrl}</code>
-                  <button className="btn sm" onClick={() => void copy(editUrl, "edit")}>
-                    {copied === "edit" ? "Copied" : "Copy editor link"}
-                  </button>
-                </div>
-              </div>
             </div>
           )}
 
@@ -192,6 +151,7 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
             <ImagePicker
               label="Profile photo"
               value={data.photo}
+              maxPx={480}
               onChange={(v) => set("photo", v)}
             />
             <div className="field-row">
@@ -546,7 +506,7 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
           </div>
         </div>
       </div>
-    </SessionContext.Provider>
+    </>
   );
 }
 
