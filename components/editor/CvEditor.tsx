@@ -5,6 +5,7 @@ import CvDocument from "@/components/CvDocument";
 import ImagePicker from "./ImagePicker";
 import { Area, ItemHead, Lines, Panel, Text, listOps } from "./fields";
 import { cleanCv } from "@/lib/clean";
+import { fetchJson } from "@/lib/fetch-json";
 import type {
   AchievementGroup,
   Client,
@@ -49,13 +50,11 @@ export default function CvEditor({ id, editKey, initial, isNew }: Props) {
     setStatus("saving");
     setError("");
     try {
-      const res = await fetch(`/api/cv/${id}`, {
+      await fetchJson(`/api/cv/${id}`, {
         method: "PUT",
         headers: { "content-type": "application/json", "x-edit-key": editKey },
         body: JSON.stringify({ data: cleanCv(data) }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Save failed");
       dirty.current = false;
       setStatus("saved");
     } catch (e) {

@@ -16,6 +16,30 @@ const hasBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 const DATA_DIR = path.join(process.cwd(), ".data");
 const keyFor = (id: string) => `cv/${id}.json`;
 
+/**
+ * Which driver is live.
+ *
+ * `unconfigured` means we're on Vercel with no Blob store connected. The local
+ * driver cannot stand in there — the serverless filesystem is read-only, so
+ * writing would fail with an opaque EROFS deep inside a request. Better to say
+ * so plainly.
+ */
+export function storageMode(): "blob" | "local" | "unconfigured" {
+  if (hasBlob()) return "blob";
+  return process.env.VERCEL ? "unconfigured" : "local";
+}
+
+export class StorageNotConfiguredError extends Error {
+  constructor() {
+    super(
+      "No Blob store is connected. In the Vercel dashboard open Storage → " +
+        "Create → Blob, connect it to this project, and redeploy. That sets " +
+        "BLOB_READ_WRITE_TOKEN, which is the only variable this app needs.",
+    );
+    this.name = "StorageNotConfiguredError";
+  }
+}
+
 const ID_ALPHABET = "abcdefghijkmnopqrstuvwxyz23456789";
 
 function randomId(len: number) {
@@ -102,12 +126,17 @@ async function localList(): Promise<CvRecord[]> {
 
 export async function getCv(id: string): Promise<CvRecord | null> {
   if (!isValidId(id)) return null;
-  return hasBlob() ? blobRead(id) : localRead(id);
+  const mode = storageMode();
+  if (mode === "unconfigured") return null;
+  return mode === "blob" ? blobRead(id) : localRead(id);
 }
 
 export async function saveCv(record: CvRecord): Promise<CvRecord> {
+  const mode = storageMode();
+  if (mode === "unconfigured") throw new StorageNotConfiguredError();
+
   const next = { ...record, updatedAt: new Date().toISOString() };
-  if (hasBlob()) await blobWrite(next);
+  if (mode === "blob") await blobWrite(next);
   else await localWrite(next);
   return next;
 }
@@ -124,7 +153,9 @@ export async function createCv(data: CvData): Promise<CvRecord> {
 }
 
 export async function listCvs(): Promise<CvRecord[]> {
-  const records = hasBlob() ? await blobList() : await localList();
+  const mode = storageMode();
+  if (mode === "unconfigured") return [];
+  const records = mode === "blob" ? await blobList() : await localList();
   return records.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 

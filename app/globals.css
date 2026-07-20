@@ -517,3 +517,14 @@ textarea.tx { resize: vertical; min-height: 62px; }
   .editor-shell { display: block; }
   .preview-pane { height: auto; overflow: visible; padding: 0; background: #fff; }
 }
+
+/* Setup warning on the home page when no storage is configured. */
+.card.setup-warning {
+  border-color: #d8a23a;
+  background: #fdf7e9;
+}
+.card.setup-warning h3 { color: #8a5d09; }
+.card.setup-warning code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px; color: #8a5d09;
+}

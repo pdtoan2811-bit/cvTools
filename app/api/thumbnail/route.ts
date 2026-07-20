@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { findKnownLogo } from "@/lib/logo-library";
+import { jsonRoute } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 20;
@@ -82,7 +83,7 @@ async function mirror(imageUrl: string): Promise<string> {
   }
 }
 
-export async function GET(req: Request) {
+export const GET = jsonRoute(async (req: Request) => {
   const params = new URL(req.url).searchParams;
   const rawUrl = params.get("url") || "";
   const name = params.get("name") || "";
@@ -138,4 +139,4 @@ export async function GET(req: Request) {
   } catch {
     return NextResponse.json({ error: "Could not resolve a logo" }, { status: 404 });
   }
-}
+});

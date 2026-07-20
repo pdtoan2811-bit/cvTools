@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listCvs } from "@/lib/store";
+import { listCvs, storageMode } from "@/lib/store";
 import NewCvButtons from "@/components/NewCvButtons";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +21,7 @@ export default async function Home({
   searchParams: Promise<{ admin?: string }>;
 }) {
   const { admin } = await searchParams;
+  const mode = storageMode();
   const cvs = await listCvs();
   const showEdit = canSeeEditLinks(admin);
 
@@ -38,6 +39,18 @@ export default async function Home({
           Every CV gets a public read-only link for sharing and a private editor link for
           changes. Export to PDF from the browser at any time.
         </p>
+
+        {mode === "unconfigured" && (
+          <div className="card setup-warning">
+            <h3>Connect a Blob store to finish setup</h3>
+            <p>
+              This deployment has nowhere to save CVs yet, so creating one will fail. In the
+              Vercel dashboard open <b>Storage → Create → Blob</b>, connect the store to this
+              project, and redeploy. That sets <code>BLOB_READ_WRITE_TOKEN</code>, the only
+              variable the app needs.
+            </p>
+          </div>
+        )}
 
         <div className="card">
           <h3>Start a new CV</h3>

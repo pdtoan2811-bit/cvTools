@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
+import { jsonRoute } from "@/lib/api";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -23,7 +24,7 @@ const EXT: Record<string, string> = {
  * With no BLOB_READ_WRITE_TOKEN it writes to `public/uploads/` instead, so
  * local development works with no cloud setup.
  */
-export async function POST(req: Request) {
+export const POST = jsonRoute(async (req: Request) => {
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
 
@@ -62,4 +63,4 @@ export async function POST(req: Request) {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(path.join(dir, path.basename(key)), Buffer.from(await file.arrayBuffer()));
   return NextResponse.json({ url: `/${key}` });
-}
+});

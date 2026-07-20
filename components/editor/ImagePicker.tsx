@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { fetchJson } from "@/lib/fetch-json";
 
 type Props = {
   label: string;
@@ -33,9 +34,7 @@ export default function ImagePicker({ label, value, onChange, auto }: Props) {
     try {
       const body = new FormData();
       body.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Upload failed");
+      const json = await fetchJson<{ url: string }>("/api/upload", { method: "POST", body });
       onChange(json.url, undefined);
       setNote("Uploaded");
     } catch (e) {
@@ -55,9 +54,9 @@ export default function ImagePicker({ label, value, onChange, auto }: Props) {
       const qs = new URLSearchParams();
       if (auto.url) qs.set("url", auto.url);
       if (auto.name) qs.set("name", auto.name);
-      const res = await fetch(`/api/thumbnail?${qs}`);
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "No logo found");
+      const json = await fetchJson<{ url: string; bg?: string; source: string }>(
+        `/api/thumbnail?${qs}`,
+      );
       onChange(json.url, json.bg);
       setNote(
         json.source === "library"

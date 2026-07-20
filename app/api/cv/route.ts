@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { jsonRoute } from "@/lib/api";
 import { createCv, listCvs } from "@/lib/store";
 import { MINH } from "@/lib/seed-minh";
 import { emptyCv, type CvData } from "@/lib/types";
@@ -6,7 +7,7 @@ import { emptyCv, type CvData } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 /** GET /api/cv — index of stored CVs (no edit keys). */
-export async function GET() {
+export const GET = jsonRoute(async () => {
   const records = await listCvs();
   return NextResponse.json({
     cvs: records.map((r) => ({
@@ -16,7 +17,7 @@ export async function GET() {
       updatedAt: r.updatedAt,
     })),
   });
-}
+});
 
 /**
  * POST /api/cv — create a CV.
@@ -24,7 +25,7 @@ export async function GET() {
  * Returns the id plus the edit key, which is shown once and lives in the
  * editor URL from then on.
  */
-export async function POST(req: Request) {
+export const POST = jsonRoute(async (req: Request) => {
   const body = (await req.json().catch(() => ({}))) as {
     seed?: string;
     data?: CvData;
@@ -36,4 +37,4 @@ export async function POST(req: Request) {
 
   const record = await createCv(data);
   return NextResponse.json({ id: record.id, editKey: record.editKey }, { status: 201 });
-}
+});
