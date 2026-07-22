@@ -446,9 +446,72 @@ textarea.tx { resize: vertical; min-height: 62px; }
 }
 .preview-pane { height: calc(100vh - 49px); overflow-y: auto; background: #e9e6dd; padding: 22px; }
 .preview-pane .sheet { width: 100%; max-width: var(--maxw); margin: 0 auto; }
+
+/* The Edit/Preview toggle only matters on narrow screens; hidden otherwise. */
+.view-toggle { display: none; }
+
 @media (max-width: 1080px) {
   .editor-shell { grid-template-columns: 1fr; }
   .editor-pane, .preview-pane { height: auto; overflow: visible; border-right: none; }
+
+  /* One pane at a time, so neither is a tiny sliver on a phone. */
+  .view-toggle { display: inline-flex; }
+  .editor-shell.show-form .preview-pane { display: none; }
+  .editor-shell.show-preview .editor-pane { display: none; }
+
+  .editor-pane { padding: 14px; }
+  .preview-pane { padding: 12px; }
+  /* Let the A4 sheet shrink to the phone's width instead of overflowing. */
+  .preview-pane .sheet-inner { padding: 14px 16px; }
+
+  /* iOS zooms the whole page in when a focused input is under 16px. Stop that. */
+  input.tx, textarea.tx, select.tx { font-size: 16px; }
+}
+
+/* The pill toggle in the toolbar. */
+.view-toggle {
+  border: 1px solid var(--rule-strong); border-radius: 999px; overflow: hidden; background: #fff;
+}
+.view-toggle button {
+  appearance: none; border: none; background: none; cursor: pointer;
+  padding: 7px 14px; font-family: var(--sans); font-size: 11px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+}
+.view-toggle button.on { background: var(--accent); color: #fff; }
+
+/* ---------- Preview reflow on a phone ----------
+   The A4 sheet's two-column grids (label gutter + content, date gutter +
+   timeline) waste half a narrow screen and squeeze the text. On small screens
+   the preview stacks to one column so it stays readable. This is screen-only:
+   the exported PDF renders through print media and keeps the full A4 layout. */
+@media (max-width: 700px) {
+  .preview-pane .sheet-inner { padding: 16px 16px 14px; }
+
+  .preview-pane .masthead { gap: 14px; }
+  .preview-pane .masthead h1 { font-size: clamp(30px, 9vw, 42px); }
+  .preview-pane .masthead .photo { width: 72px; height: 72px; }
+  .preview-pane .masthead .contact { gap: 4px 14px; }
+
+  .preview-pane .section {
+    grid-template-columns: 1fr; gap: 3px; padding: 16px 0;
+  }
+  .preview-pane .section > .label { padding-top: 0; }
+  .preview-pane .section > .label .num { display: inline; margin: 0 8px 0 0; }
+
+  /* Experience / Education: drop the timeline rule and date gutter. */
+  .preview-pane .xp { padding: 16px 0; }
+  .preview-pane .xp-list::before { display: none; }
+  .preview-pane .xp .entry { grid-template-columns: 1fr; column-gap: 0; margin-bottom: 22px; }
+  .preview-pane .xp .entry::before { display: none; }
+  .preview-pane .xp .when {
+    text-align: left; padding: 0 0 5px; display: flex; align-items: center; gap: 10px;
+  }
+  .preview-pane .xp .when .co-logo { margin: 0; max-height: 20px; }
+  .preview-pane .xp .what { padding-left: 0; }
+
+  .preview-pane .skills-grid,
+  .preview-pane .projects-grid,
+  .preview-pane .shipped-grid { grid-template-columns: 1fr; }
 }
 
 /* Collapsible section in the editor */
@@ -501,8 +564,22 @@ textarea.tx { resize: vertical; min-height: 62px; }
 .ed-bar .title {
   font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
   text-transform: uppercase; color: var(--muted);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .ed-bar .title b { color: var(--ink); }
+.ed-bar .actions { flex: 0 0 auto; }
+
+@media (max-width: 1080px) {
+  .ed-bar { padding: 8px 12px; gap: 8px; }
+  .ed-bar .actions { gap: 6px; }
+  .ed-bar .btn { padding: 7px 11px; }
+  /* The "· saved in this browser" note is nice-to-have; drop it when tight. */
+  .ed-bar .title .ok, .ed-bar .title .err { display: none; }
+}
+@media (max-width: 560px) {
+  /* Below the name, only the toggle + actions — everything stays reachable. */
+  .ed-bar .title { display: none; }
+}
 
 /* ---------- Share popover ---------- */
 .share-pop {
@@ -612,6 +689,14 @@ h3:hover > .row-tools,
 }
 .row-tools button:hover { border-color: var(--accent); color: var(--accent); }
 .row-tools button:last-child:hover { border-color: #c9584a; color: #b4271b; }
+
+/* No hover on touch, so the controls stay visible and are big enough to tap. */
+@media (hover: none), (max-width: 1080px) {
+  .row-tools { opacity: 1; gap: 5px; margin-left: 8px; }
+  .row-tools button { width: 26px; height: 26px; font-size: 13px; border-radius: 6px; }
+  /* The remove (✕) is the second button — tint it so it reads as destructive. */
+  .row-tools button:last-child { border-color: #e0b3ab; color: #b4271b; }
+}
 
 /* Product cards are <div> while editing (no navigation on click). */
 .is-editing .prod-card { cursor: default; }

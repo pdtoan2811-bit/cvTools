@@ -27,6 +27,10 @@ const AUTOSAVE_MS = 800;
 
 export default function CvEditor({ initial, source }: Props) {
   const [data, setData] = useState<CvData>(initial);
+  // On phones the two panes can't sit side by side, so one shows at a time.
+  // The form is the default — tapping tiny A4 text with a finger is the hard
+  // way to edit; the labelled inputs are the easy one.
+  const [mobileView, setMobileView] = useState<"form" | "preview">("form");
   const [status, setStatus] = useState<"idle" | "saved" | "error">(
     source === "shared" ? "saved" : "idle",
   );
@@ -118,6 +122,24 @@ export default function CvEditor({ initial, source }: Props) {
           {status === "error" && <span className="err"> · {error}</span>}
         </span>
         <div className="actions">
+          <div className="view-toggle" role="tablist" aria-label="Switch view">
+            <button
+              className={mobileView === "form" ? "on" : ""}
+              onClick={() => setMobileView("form")}
+              role="tab"
+              aria-selected={mobileView === "form"}
+            >
+              Edit
+            </button>
+            <button
+              className={mobileView === "preview" ? "on" : ""}
+              onClick={() => setMobileView("preview")}
+              role="tab"
+              aria-selected={mobileView === "preview"}
+            >
+              Preview
+            </button>
+          </div>
           <button className="btn" onClick={() => window.print()}>
             ⬇ PDF
           </button>
@@ -125,7 +147,7 @@ export default function CvEditor({ initial, source }: Props) {
         </div>
       </div>
 
-      <div className="editor-shell">
+      <div className={`editor-shell show-${mobileView}`}>
         <div className="editor-pane">
           {source === "shared" && (
             <div className="card note" style={{ padding: 16 }}>
