@@ -1,13 +1,13 @@
 /* ============================================================
    CV TOOLS — EDITORIAL EDITION
-   Display serif (Fraunces) + clean sans (Inter), inline SVG icons,
+   Roboto throughout, inline SVG icons,
    warm paper, single restrained accent. Screen + A4 print.
 
    The `.sheet` / `.section` / `.xp` rules below are the original CV design.
    App chrome (home page, editor) lives at the bottom under "APP UI".
    ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;0,900;1,400;1,500;1,700&display=swap");
 
 :root {
   --paper: #fbfaf6;
@@ -20,7 +20,10 @@
   --rule: #e6e1d6;
   --rule-strong: #d6d0c2;
 
-  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  /* Everything is Roboto now. `--serif` is kept as a name so the many
+     display headings that reference it don't each need editing; it just points
+     at Roboto too, leaning on heavier weights for the editorial emphasis. */
+  --serif: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --sans: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   --sidebar-w: 168px;
