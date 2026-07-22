@@ -343,8 +343,17 @@ export default function CvDocument({ data }: { data: CvData }) {
               {d.summary.map((p, i) => (
                 <p
                   key={i}
+                  // While editing, every paragraph looks the same, so pressing
+                  // Enter never jumps to a different font or size. The editorial
+                  // lead/pull treatment returns in the read-only view and PDF.
                   className={
-                    i === 0 ? "lead" : i === d.summary.length - 1 && d.summary.length > 2 ? "pull" : ""
+                    editing
+                      ? ""
+                      : i === 0
+                        ? "lead"
+                        : i === d.summary.length - 1 && d.summary.length > 2
+                          ? "pull"
+                          : ""
                   }
                 >
                   <T

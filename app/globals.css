@@ -7,7 +7,7 @@
    App chrome (home page, editor) lives at the bottom under "APP UI".
    ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap");
 
 :root {
   --paper: #fbfaf6;
@@ -21,7 +21,7 @@
   --rule-strong: #d6d0c2;
 
   --serif: "Fraunces", Georgia, "Times New Roman", serif;
-  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --sans: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   --sidebar-w: 168px;
   --gap: 28px;
